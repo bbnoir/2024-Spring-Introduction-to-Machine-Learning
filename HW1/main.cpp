@@ -45,6 +45,15 @@ int main()
       test_x(i, j) = std::stod(item);
     }
   }
+  
+  // Normalization
+  vector_t mean = train_x.colwise().mean();
+  vector_t std_dev = ((train_x.rowwise() - mean.transpose()).array().square().colwise().sum() / (train_x.rows()-1)).sqrt();
+  train_x = (train_x.rowwise() - mean.transpose()).array().rowwise() / std_dev.transpose().array();
+  mean = test_x.colwise().mean();
+  std_dev = ((test_x.rowwise() - mean.transpose()).array().square().colwise().sum() / (test_x.rows()-1)).sqrt();
+  test_x = (test_x.rowwise() - mean.transpose()).array().rowwise() / std_dev.transpose().array();
+
 
   // Training
 
