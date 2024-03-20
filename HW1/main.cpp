@@ -2,6 +2,7 @@
 #include <fstream>
 #include <cmath>
 #include <Eigen/Dense>
+#include <Eigen/QR>
  
 typedef double scalar_t;
 typedef Eigen::Matrix<scalar_t, Eigen::Dynamic, 1> vector_t;
@@ -97,7 +98,8 @@ int main()
       for (int k = 1; k < M; ++k)
         phi.col(j*M+k) = 1 / (1 + (-(train_x.col(j).array() - u(i, k)) / s).exp());
     }
-    w[i] = (phi.transpose() * phi).ldlt().solve(phi.transpose() * train_t);
+    // w[i] = (phi.transpose() * phi).ldlt().solve(phi.transpose() * train_t);
+    w[i] = phi.completeOrthogonalDecomposition().pseudoInverse() * train_t;
     train_y[i] = phi * w[i];
     train_mse[i] = (train_t - train_y[i]).array().square().sum() / train_x.rows();
     train_accuracy[i] = cal_accuracy(train_t, train_y[i]);

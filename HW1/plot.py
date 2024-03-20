@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
 # Parse
 HW1_data = np.genfromtxt('HW1.csv', delimiter=',', skip_header=1)
@@ -21,29 +22,38 @@ test_acc = output_data[:6, 4]
 
 # Plot
 
-# ## Scatter plot of train and test data
-# for i in range(11):
-#     plt.figure(figsize=(20, 10))
-#     for m in range(6):
-#         plt.subplot(2, 3, m+1)
-#         plt.scatter(train_x[:, i], train_t, label='train_t', alpha=0.5)
-#         plt.scatter(train_x[:, i], train_pred[:, m], label='train_pred', alpha=0.5)
-#         plt.legend()
-#         plt.title('M={}'.format(M_list[m]))
-#         plt.xlabel('x')
-#         plt.ylabel('y/t')
-#     plt.savefig('./pic/scatter/train/fitting_curve_f{}.png'.format(i+1))
-#     plt.close()
-#     plt.figure(figsize=(20, 10))
-#     for m in range(6):
-#         plt.subplot(2, 3, m+1)
-#         plt.scatter(test_x[:, i], test_t, label='test_t', alpha=0.5)
-#         plt.scatter(test_x[:, i], test_pred[:, m], label='test_pred', alpha=0.5)
-#         plt.legend()
-#         plt.title('M={}'.format(M_list[m]))
-#         plt.xlabel('x')
-#         plt.ylabel('y/t')
-#     plt.savefig('./pic/scatter/test/fitting_curve_f{}.png'.format(i+1))
+pic_path = './pic2/'
+if not os.path.exists(pic_path):
+    os.mkdir(pic_path)
+
+## Scatter plot of train and test data
+for i in range(11):
+    plt.figure(figsize=(20, 10))
+    for m in range(6):
+        plt.subplot(2, 3, m+1)
+        plt.scatter(train_x[:, i], train_t, label='train_t', alpha=0.5)
+        plt.scatter(train_x[:, i], train_pred[:, m], label='train_pred', alpha=0.5)
+        plt.legend()
+        plt.title('M={}'.format(M_list[m]))
+        plt.xlabel('x')
+        plt.ylabel('y/t')
+    if not os.path.exists(pic_path + 'scatter/train/'):
+        os.makedirs(pic_path + 'scatter/train/')
+    plt.savefig(pic_path + 'scatter/train/fitting_curve_f{}.png'.format(i+1))
+    plt.close()
+    plt.figure(figsize=(20, 10))
+    for m in range(6):
+        plt.subplot(2, 3, m+1)
+        plt.scatter(test_x[:, i], test_t, label='test_t', alpha=0.5)
+        plt.scatter(test_x[:, i], test_pred[:, m], label='test_pred', alpha=0.5)
+        plt.legend()
+        plt.title('M={}'.format(M_list[m]))
+        plt.xlabel('x')
+        plt.ylabel('y/t')
+    if not os.path.exists(pic_path + 'scatter/test/'):
+        os.makedirs(pic_path + 'scatter/test/')
+    plt.savefig(pic_path + 'scatter/test/fitting_curve_f{}.png'.format(i+1))
+    plt.close()
 
 ## Part 2 - MSE and Accuracy
 plt.figure(figsize=(20, 10))
@@ -61,6 +71,6 @@ plt.legend()
 plt.title('Accuracy')
 plt.xlabel('M')
 plt.ylabel('Accuracy')
-plt.savefig('./pic/mse_acc.png')
+plt.savefig(pic_path + 'mse_acc.png')
 plt.close()
 
