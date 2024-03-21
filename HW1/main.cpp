@@ -9,6 +9,11 @@ typedef Eigen::Matrix<scalar_t, Eigen::Dynamic, 1> vector_t;
 typedef Eigen::Array<scalar_t, Eigen::Dynamic, Eigen::Dynamic> array_t;
 typedef Eigen::Matrix<scalar_t, Eigen::Dynamic, Eigen::Dynamic> matrix_t;
 
+scalar_t cal_mse(const vector_t &t, const vector_t &y)
+{
+  return (t - y).array().square().sum() / t.size();
+}
+
 scalar_t cal_accuracy(const vector_t &t, const vector_t &y)
 {
   scalar_t accuracy = 0;
@@ -22,10 +27,41 @@ scalar_t cal_accuracy(const vector_t &t, const vector_t &y)
   accuracy /= t.size();
   return 1 - accuracy;
 }
+
+// Parameters
+int N = 11; // number of features
+const int M_list[6] = {5, 10, 15, 20, 25, 30};
+const scalar_t s = 0.1;
+matrix_t u(6, 30);
+
+void init_parameters()
+{
+  for (int i = 0; i < 6; ++i)
+    for (int j = 1; j < M_list[i]; ++j)
+    {
+      scalar_t d_j = j, d_M = M_list[i];
+      u(i, j) = 3 * (-d_M + 1 + 2*(d_j-1)*(d_M-1)/(d_M-2)) / d_M;
+    }
+}
+
+matrix_t design_matrix(const matrix_t &x, const int M, const scalar_t s, const vector_t &u)
+{
+  int N = x.cols();
+  matrix_t phi(x.rows(), N*M);
+  for (int i = 0; i < N; ++i)
+  {
+    phi.col(i*M) = vector_t::Ones(x.rows());
+    for (int j = 1; j < M; ++j)
+      phi.col(i*M+j) = 1 / (1 + (-(x.col(i).array() - u(j)) / s).exp());
+  }
+  return phi;
+}
  
 int main()
 {
-  int N = 11; // number of features
+  // Initialize Parameters
+  init_parameters();
+
   // Data
   matrix_t train_x(10000, N);
   vector_t train_t(10000);
@@ -36,30 +72,23 @@ int main()
   std::ifstream in_file("./HW1.csv");
   std::string line;
   std::getline(in_file, line); // skip the first line
-  for (int i = 0; i < 10000; ++i)
+  for (int i = 0; i < 15818; ++i)
   {
     std::getline(in_file, line);
     std::stringstream ss(line);
     std::string item;
     std::getline(ss, item, ',');
-    train_t(i) = std::stod(item);
+    if (i < 10000)
+      train_t(i) = std::stod(item);
+    else
+      test_t(i-10000) = std::stod(item);
     for (int j = 0; j < N; ++j)
     {
       std::getline(ss, item, ',');
-      train_x(i, j) = std::stod(item);
-    }
-  }
-  for (int i = 0; i < 5817; ++i)
-  {
-    std::getline(in_file, line);
-    std::stringstream ss(line);
-    std::string item;
-    std::getline(ss, item, ',');
-    test_t(i) = std::stod(item);
-    for (int j = 0; j < N; ++j)
-    {
-      std::getline(ss, item, ',');
-      test_x(i, j) = std::stod(item);
+      if (i < 10000)
+        train_x(i, j) = std::stod(item);
+      else
+        test_x(i-10000, j) = std::stod(item);
     }
   }
   
@@ -69,37 +98,18 @@ int main()
   train_x = (train_x.rowwise() - mean.transpose()).array().rowwise() / std_dev.transpose().array();
   test_x = (test_x.rowwise() - mean.transpose()).array().rowwise() / std_dev.transpose().array();
 
-  // Parameters
-  N = 11;
-  int M_list[6] = {5, 10, 15, 20, 25, 30};
-  const scalar_t s = 0.1;
-  matrix_t u(6, 30);
-  for (int i = 0; i < 6; ++i)
-    for (int j = 1; j < M_list[i]; ++j)
-    {
-      scalar_t d_j = j, d_M = M_list[i];
-      u(i, j) = 3 * (-d_M + 1 + 2*(d_j-1)*(d_M-1)/(d_M-2)) / d_M;
-    }
-
   // Training
   vector_t w[6];
   vector_t train_y[6];
-  scalar_t train_mse[6] = {0};
-  scalar_t train_accuracy[6] = {0};
+  scalar_t train_mse[6];
+  scalar_t train_accuracy[6];
   for (int i = 0; i < 6; ++i)
   {
-    int M = M_list[i];
-    matrix_t phi(train_x.rows(), N*M);
-    for (int j = 0; j < N; ++j)
-    {
-      phi.col(j*M) = vector_t::Ones(train_x.rows());
-      for (int k = 1; k < M; ++k)
-        phi.col(j*M+k) = 1 / (1 + (-(train_x.col(j).array() - u(i, k)) / s).exp());
-    }
-    // w[i] = (phi.transpose() * phi).ldlt().solve(phi.transpose() * train_t);
-    w[i] = phi.completeOrthogonalDecomposition().pseudoInverse() * train_t;
+    matrix_t phi = design_matrix(train_x, M_list[i], s, u.row(i));
+    w[i] = (phi.transpose() * phi).ldlt().solve(phi.transpose() * train_t);
+    // w[i] = phi.completeOrthogonalDecomposition().pseudoInverse() * train_t;
     train_y[i] = phi * w[i];
-    train_mse[i] = (train_t - train_y[i]).array().square().sum() / train_x.rows();
+    train_mse[i] = cal_mse(train_t, train_y[i]);
     train_accuracy[i] = cal_accuracy(train_t, train_y[i]);
   }
 
@@ -109,16 +119,9 @@ int main()
   scalar_t test_accuracy[6];
   for (int i = 0; i < 6; ++i)
   {
-    int M = M_list[i];
-    matrix_t phi(test_x.rows(), N*M);
-    for (int j = 0; j < N; ++j)
-    {
-      phi.col(j*M) = vector_t::Ones(test_x.rows());
-      for (int k = 1; k < M; ++k)
-        phi.col(j*M+k) = 1 / (1 + (-(test_x.col(j).array() - u(i, k)) / s).exp());
-    }
+    matrix_t phi = design_matrix(test_x, M_list[i], s, u.row(i));
     test_y[i] = phi * w[i];
-    test_mse[i] = (test_t - test_y[i]).array().square().sum() / test_x.rows();
+    test_mse[i] = cal_mse(test_t, test_y[i]);
     test_accuracy[i] = cal_accuracy(test_t, test_y[i]);
   }
 
