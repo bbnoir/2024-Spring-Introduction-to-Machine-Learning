@@ -22,7 +22,7 @@ test_acc = output_data[:6, 4]
 
 # Plot
 
-pic_path = './pic2/'
+pic_path = './pic4/'
 if not os.path.exists(pic_path):
     os.mkdir(pic_path)
 
@@ -37,6 +37,7 @@ for i in range(11):
         plt.title('M={}'.format(M_list[m]))
         plt.xlabel('x')
         plt.ylabel('y/t')
+        plt.ylim(0, 100)
     if not os.path.exists(pic_path + 'scatter/train/'):
         os.makedirs(pic_path + 'scatter/train/')
     plt.savefig(pic_path + 'scatter/train/fitting_curve_f{}.png'.format(i+1))
@@ -50,6 +51,7 @@ for i in range(11):
         plt.title('M={}'.format(M_list[m]))
         plt.xlabel('x')
         plt.ylabel('y/t')
+        plt.ylim(0, 100)
     if not os.path.exists(pic_path + 'scatter/test/'):
         os.makedirs(pic_path + 'scatter/test/')
     plt.savefig(pic_path + 'scatter/test/fitting_curve_f{}.png'.format(i+1))
