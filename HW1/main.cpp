@@ -60,16 +60,13 @@ matrix_t design_matrix(const matrix_t &x, const int M, const scalar_t s, const v
   return phi;
 }
 
-// test for 6 M values
-void test_6_M(const vector_t *w, const matrix_t &x, const vector_t &t, vector_t *y, scalar_t *mse, scalar_t *accuracy)
+// test
+void test(const vector_t &w, const matrix_t &x, const vector_t &t, vector_t &y, scalar_t &mse, scalar_t &accuracy, const int M_idx)
 {
-  for (int i = 0; i < 6; ++i)
-  {
-    matrix_t phi = design_matrix(x, M_list[i], s, u.row(i));
-    y[i] = phi * w[i];
-    mse[i] = cal_mse(t, y[i]);
-    accuracy[i] = cal_accuracy(t, y[i]);
-  }
+  matrix_t phi = design_matrix(x, M_list[M_idx], s, u.row(M_idx));
+  y = phi * w;
+  mse = cal_mse(t, y);
+  accuracy = cal_accuracy(t, y);
 }
 
 void show_accuracy(const scalar_t *train_mse, const scalar_t *train_accuracy, const scalar_t *test_mse, const scalar_t *test_accuracy, const scalar_t *demo_mse, const scalar_t *demo_accuracy)
@@ -78,6 +75,7 @@ void show_accuracy(const scalar_t *train_mse, const scalar_t *train_accuracy, co
   std::cout << "----------------------------------------------------------------------------------------------------------------------\n";
   for (int i = 0; i < 6; ++i)
     std::cout << "| " << M_list[i] << "\t| " << train_mse[i] << "\t| " << train_accuracy[i] << "\t\t| " << test_mse[i] << "\t| " << test_accuracy[i] << "\t\t| " << demo_mse[i] << "\t| " << demo_accuracy[i] << "\n";
+  std::cout << "----------------------------------------------------------------------------------------------------------------------\n";
 }
 
 void export_accuracy(std::string filename, const scalar_t *train_mse, const scalar_t *train_accuracy, const scalar_t *test_mse, const scalar_t *test_accuracy)
@@ -190,13 +188,15 @@ int main()
   vector_t test_y[6];
   scalar_t test_mse[6];
   scalar_t test_accuracy[6];
-  test_6_M(w, test_x, test_t, test_y, test_mse, test_accuracy);
+  for (int i = 0; i < 6; ++i)
+    test(w[i], test_x, test_t, test_y[i], test_mse[i], test_accuracy[i], i);
 
   // Demo
   vector_t demo_y[6];
   scalar_t demo_mse[6];
   scalar_t demo_accuracy[6];
-  test_6_M(w, demo_x, demo_t, demo_y, demo_mse, demo_accuracy);
+  for (int i = 0; i < 6; ++i)
+    test(w[i], demo_x, demo_t, demo_y[i], demo_mse[i], demo_accuracy[i], i);
 
   // Show Accuracy
   show_accuracy(train_mse, train_accuracy, test_mse, test_accuracy, demo_mse, demo_accuracy);
@@ -208,6 +208,55 @@ int main()
   export_prediction(out_dir + "test_prediction.csv", test_y);
 
   // Part: 5 Fold Cross Validation
+
+  // Split Data into 5 Folds
+  matrix_t split_train_x[5];
+  vector_t split_train_t[5];
+  for (int i = 0; i < 5; ++i)
+  {
+    split_train_x[i] = train_x.block(i*2000, 0, 2000, N);
+    split_train_t[i] = train_t.segment(i*2000, 2000);
+  }
+
+  // Training
+  vector_t w_cv[5][6];
+  vector_t train_y_cv[5][6];
+  scalar_t train_mse_cv[5][6];
+  scalar_t train_accuracy_cv[5][6];
+  vector_t val_y_cv[5][6];
+  scalar_t val_mse_cv[5][6];
+  scalar_t val_accuracy_cv[5][6];
+  scalar_t accuracy_sum[6] = {0};
+  int best_M_idx = 0;
+  for (int i = 0; i < 6; ++i)
+  {
+    for (int j = 0; j < 5; ++j)
+    {
+      matrix_t merge_train_x(8000, N);
+      vector_t merge_train_t(8000);
+      int k = 0;
+      for (int l = 0; l < 5; ++l)
+      {
+        if (l != j)
+        {
+          merge_train_x.block(k*2000, 0, 2000, N) = split_train_x[l];
+          merge_train_t.segment(k*2000, 2000) = split_train_t[l];
+          k++;
+        }
+      }
+      matrix_t phi = design_matrix(merge_train_x, M_list[i], s, u.row(i));
+      w_cv[j][i] = (phi.transpose() * phi).ldlt().solve(phi.transpose() * merge_train_t);
+      // w_cv[j][i] = phi.completeOrthogonalDecomposition().pseudoInverse() * merge_train_t;
+      train_y_cv[j][i] = phi * w_cv[j][i];
+      train_mse_cv[j][i] = cal_mse(merge_train_t, train_y_cv[j][i]);
+      train_accuracy_cv[j][i] = cal_accuracy(merge_train_t, train_y_cv[j][i]);
+      test(w_cv[j][i], split_train_x[j], split_train_t[j], val_y_cv[j][i], val_mse_cv[j][i], val_accuracy_cv[j][i], i);
+      accuracy_sum[i] += val_accuracy_cv[j][i];
+    }
+    if (accuracy_sum[i] > accuracy_sum[best_M_idx])
+      best_M_idx = i;
+  }
+  std::cout << "Best M: " << M_list[best_M_idx] << "\n";
 
   // Part: Ridge Regression
   
