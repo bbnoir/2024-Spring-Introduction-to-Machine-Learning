@@ -259,5 +259,48 @@ int main()
   std::cout << "Best M: " << M_list[best_M_idx] << "\n";
 
   // Part: Ridge Regression
+
+  // Training
+  const int lambda_list_size = 1;
+  scalar_t lambda_list[6] = {0.1, 0.005, 0.001, 0.5, 1, 10};
+  vector_t w_ridge[lambda_list_size][6];
+  vector_t train_y_ridge[lambda_list_size][6];
+  scalar_t train_mse_ridge[lambda_list_size][6];
+  scalar_t train_accuracy_ridge[lambda_list_size][6];
+  for (int i = 0; i < 6; ++i)
+  {
+    matrix_t phi = design_matrix(train_x, M_list[i], s, u.row(i));
+    for (int j = 0; j < lambda_list_size; ++j)
+    {
+      w_ridge[j][i] = (phi.transpose() * phi + lambda_list[j] * matrix_t::Identity(M_list[i]*N, M_list[i]*N)).completeOrthogonalDecomposition().pseudoInverse() * phi.transpose() * train_t;
+      train_y_ridge[j][i] = phi * w_ridge[j][i];
+      train_mse_ridge[j][i] = cal_mse(train_t, train_y_ridge[j][i]);
+      train_accuracy_ridge[j][i] = cal_accuracy(train_t, train_y_ridge[j][i]);
+    }
+  }
+
+  // Testing
+  vector_t test_y_ridge[lambda_list_size][6];
+  scalar_t test_mse_ridge[lambda_list_size][6];
+  scalar_t test_accuracy_ridge[lambda_list_size][6];
+  for (int i = 0; i < 6; ++i)
+    for (int j = 0; j < lambda_list_size; ++j)
+      test(w_ridge[j][i], test_x, test_t, test_y_ridge[j][i], test_mse_ridge[j][i], test_accuracy_ridge[j][i], i);
+
+  // Demo
+  vector_t demo_y_ridge[lambda_list_size][6];
+  scalar_t demo_mse_ridge[lambda_list_size][6];
+  scalar_t demo_accuracy_ridge[lambda_list_size][6];
+  for (int i = 0; i < 6; ++i)
+    for (int j = 0; j < lambda_list_size; ++j)
+      test(w_ridge[j][i], demo_x, demo_t, demo_y_ridge[j][i], demo_mse_ridge[j][i], demo_accuracy_ridge[j][i], i);
+
+  // Show accuracy
+  std::cout << "Ridge Regression\n";
+  for (int i = 0; i < lambda_list_size; ++i)
+  {
+    std::cout << "Lambda: " << lambda_list[i] << "\n";
+    show_accuracy(train_mse_ridge[i], train_accuracy_ridge[i], test_mse_ridge[i], test_accuracy_ridge[i], demo_mse_ridge[i], demo_accuracy_ridge[i]);
+  }
   
 }
