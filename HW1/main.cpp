@@ -2,7 +2,6 @@
 #include <fstream>
 #include <cmath>
 #include <Eigen/Dense>
-#include <Eigen/QR>
  
 typedef double scalar_t;
 typedef Eigen::Matrix<scalar_t, Eigen::Dynamic, 1> vector_t;
@@ -72,7 +71,7 @@ int main()
   std::ifstream in_file("./HW1.csv");
   std::string line;
   std::getline(in_file, line); // skip the first line
-  for (int i = 0; i < 15818; ++i)
+  for (int i = 0; i < 15817; ++i)
   {
     std::getline(in_file, line);
     std::stringstream ss(line);
@@ -125,13 +124,22 @@ int main()
     test_accuracy[i] = cal_accuracy(test_t, test_y[i]);
   }
 
+  // Show Accuracy
+  std::cout << "| M\t| Train MSE\t| Train Accuracy\t| Test MSE\t| Test Accuracy\t\t| Demo MSE\t| Demo Accuracy\n";
+  std::cout << "----------------------------------------------------------------------------------------------------------------------\n";
+  for (int i = 0; i < 6; ++i)
+    std::cout << "| " << M_list[i] << "\t| " << train_mse[i] << "\t| " << train_accuracy[i] << "\t\t| " << test_mse[i] << "\t| " << test_accuracy[i] << "\t\t| " << train_mse[i] << "\t| " << train_accuracy[i] << "\n";
+
   // Output
-  std::ofstream out_file("./output.csv");
+  std::string out_dir = "./output/test1/";
+  // Accuracy
+  std::ofstream out_file(out_dir + "accuracy.csv");
   out_file << "M,Train MSE,Train Accuracy,Test MSE,Test Accuracy\n";
   for (int i = 0; i < 6; ++i)
     out_file << M_list[i] << "," << train_mse[i] << "," << train_accuracy[i] << "," << test_mse[i] << "," << test_accuracy[i] << "\n";
   out_file.close();
-  out_file.open("./pred.csv");
+  // Prediction
+  out_file.open(out_dir + "pred.csv");
   out_file << "M=5,M=10,M=15,M=20,M=25,M=30\n";
   for (int i = 0; i < train_y[0].size(); ++i)
   {
@@ -145,4 +153,5 @@ int main()
       out_file << test_y[j](i) << ",";
     out_file << "\n";
   }
+  out_file.close();
 }
