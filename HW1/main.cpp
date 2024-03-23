@@ -1,12 +1,16 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include <filesystem>
+#include <vector>
 #include <Eigen/Dense>
  
 typedef double scalar_t;
 typedef Eigen::Matrix<scalar_t, Eigen::Dynamic, 1> vector_t;
 typedef Eigen::Array<scalar_t, Eigen::Dynamic, Eigen::Dynamic> array_t;
 typedef Eigen::Matrix<scalar_t, Eigen::Dynamic, Eigen::Dynamic> matrix_t;
+
+std::string out_dir = "./output/new_test/";
 
 scalar_t cal_mse(const vector_t &t, const vector_t &y)
 {
@@ -55,6 +59,36 @@ matrix_t design_matrix(const matrix_t &x, const int M, const scalar_t s, const v
   }
   return phi;
 }
+
+void show_accuracy(const scalar_t *train_mse, const scalar_t *train_accuracy, const scalar_t *test_mse, const scalar_t *test_accuracy, const scalar_t *demo_mse, const scalar_t *demo_accuracy)
+{
+  std::cout << "| M\t| Train MSE\t| Train Accuracy\t| Test MSE\t| Test Accuracy\t\t| Demo MSE\t| Demo Accuracy\n";
+  std::cout << "----------------------------------------------------------------------------------------------------------------------\n";
+  for (int i = 0; i < 6; ++i)
+    std::cout << "| " << M_list[i] << "\t| " << train_mse[i] << "\t| " << train_accuracy[i] << "\t\t| " << test_mse[i] << "\t| " << test_accuracy[i] << "\t\t| " << demo_mse[i] << "\t| " << demo_accuracy[i] << "\n";
+}
+
+void export_accuracy(std::string filename, const scalar_t *train_mse, const scalar_t *train_accuracy, const scalar_t *test_mse, const scalar_t *test_accuracy)
+{
+  std::ofstream out_file(filename);
+  out_file << "M,Train MSE,Train Accuracy,Test MSE,Test Accuracy\n";
+  for (int i = 0; i < 6; ++i)
+    out_file << M_list[i] << "," << train_mse[i] << "," << train_accuracy[i] << "," << test_mse[i] << "," << test_accuracy[i] << "\n";
+  out_file.close();
+}
+
+void export_prediction(std::string filename, const vector_t *pred)
+{
+  std::ofstream out_file(filename);
+  out_file << "M=5,M=10,M=15,M=20,M=25,M=30\n";
+  for (int i = 0; i < pred[0].size(); ++i)
+  {
+    for (int j = 0; j < 6; ++j)
+      out_file << pred[j](i) << ",";
+    out_file << "\n";
+  }
+  out_file.close();
+}
  
 int main()
 {
@@ -90,12 +124,38 @@ int main()
         test_x(i-10000, j) = std::stod(item);
     }
   }
+  in_file.close();
+
+  // Demo Data
+  std::vector<std::string> demo_lines;
+  in_file.open("./HW1_demo.csv");
+  std::getline(in_file, line); // skip the first line
+  while (std::getline(in_file, line))
+    demo_lines.push_back(line);
+  in_file.close();
+
+  int demo_size = demo_lines.size();
+  matrix_t demo_x(demo_size, N);
+  vector_t demo_t(demo_size);
+  for (int i = 0; i < demo_size; ++i)
+  {
+    std::stringstream ss(demo_lines[i]);
+    std::string item;
+    std::getline(ss, item, ',');
+    demo_t(i) = std::stod(item);
+    for (int j = 0; j < N; ++j)
+    {
+      std::getline(ss, item, ',');
+      demo_x(i, j) = std::stod(item);
+    }
+  }
   
   // Normalization
   vector_t mean = train_x.colwise().mean();
   vector_t std_dev = ((train_x.rowwise() - mean.transpose()).array().square().colwise().sum() / (train_x.rows()-1)).sqrt();
   train_x = (train_x.rowwise() - mean.transpose()).array().rowwise() / std_dev.transpose().array();
   test_x = (test_x.rowwise() - mean.transpose()).array().rowwise() / std_dev.transpose().array();
+  demo_x = (demo_x.rowwise() - mean.transpose()).array().rowwise() / std_dev.transpose().array();
 
   // Training
   vector_t w[6];
@@ -124,34 +184,24 @@ int main()
     test_accuracy[i] = cal_accuracy(test_t, test_y[i]);
   }
 
-  // Show Accuracy
-  std::cout << "| M\t| Train MSE\t| Train Accuracy\t| Test MSE\t| Test Accuracy\t\t| Demo MSE\t| Demo Accuracy\n";
-  std::cout << "----------------------------------------------------------------------------------------------------------------------\n";
+  // Demo
+  vector_t demo_y[6];
+  scalar_t demo_mse[6];
+  scalar_t demo_accuracy[6];
   for (int i = 0; i < 6; ++i)
-    std::cout << "| " << M_list[i] << "\t| " << train_mse[i] << "\t| " << train_accuracy[i] << "\t\t| " << test_mse[i] << "\t| " << test_accuracy[i] << "\t\t| " << train_mse[i] << "\t| " << train_accuracy[i] << "\n";
+  {
+    matrix_t phi = design_matrix(demo_x, M_list[i], s, u.row(i));
+    demo_y[i] = phi * w[i];
+    demo_mse[i] = cal_mse(demo_t, demo_y[i]);
+    demo_accuracy[i] = cal_accuracy(demo_t, demo_y[i]);
+  }
+
+  // Show Accuracy
+  show_accuracy(train_mse, train_accuracy, test_mse, test_accuracy, demo_mse, demo_accuracy);
 
   // Output
-  std::string out_dir = "./output/test1/";
-  // Accuracy
-  std::ofstream out_file(out_dir + "accuracy.csv");
-  out_file << "M,Train MSE,Train Accuracy,Test MSE,Test Accuracy\n";
-  for (int i = 0; i < 6; ++i)
-    out_file << M_list[i] << "," << train_mse[i] << "," << train_accuracy[i] << "," << test_mse[i] << "," << test_accuracy[i] << "\n";
-  out_file.close();
-  // Prediction
-  out_file.open(out_dir + "pred.csv");
-  out_file << "M=5,M=10,M=15,M=20,M=25,M=30\n";
-  for (int i = 0; i < train_y[0].size(); ++i)
-  {
-    for (int j = 0; j < 6; ++j)
-      out_file << train_y[j](i) << ",";
-    out_file << "\n";
-  }
-  for (int i = 0; i < test_y[0].size(); ++i)
-  {
-    for (int j = 0; j < 6; ++j)
-      out_file << test_y[j](i) << ",";
-    out_file << "\n";
-  }
-  out_file.close();
+  std::filesystem::create_directories(out_dir);
+  export_accuracy(out_dir + "accuracy.csv", train_mse, train_accuracy, test_mse, test_accuracy);
+  export_prediction(out_dir + "train_prediction.csv", train_y);
+  export_prediction(out_dir + "test_prediction.csv", test_y);
 }
