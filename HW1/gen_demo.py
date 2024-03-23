@@ -6,8 +6,8 @@ def gen_demo():
     with open('HW1.csv', 'r') as f:
         # copy the header
         header = next(f)
-        # sample 8000 lines ignoring the header
-        lines = [next(f) for _ in range(8000)]
+        # randomly sample 8000 lines
+        lines = np.random.choice(list(f), 8000, replace=False)
         # write the sampled lines to a new file
         with open('HW1_demo.csv', 'w') as f:
             f.write(header)
