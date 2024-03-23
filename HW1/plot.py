@@ -4,16 +4,17 @@ import os
 
 # Parse
 HW1_data = np.genfromtxt('HW1.csv', delimiter=',', skip_header=1)
-output_data = np.genfromtxt('output.csv', delimiter=',', skip_header=1)
-pred_data = np.genfromtxt('pred.csv', delimiter=',', skip_header=1)
+output_data = np.genfromtxt('./output/new_test/accuracy.csv', delimiter=',', skip_header=1)
+train_pred_data = np.genfromtxt('./output/new_test/train_prediction.csv', delimiter=',', skip_header=1)
+test_pred_data = np.genfromtxt('./output/new_test/test_prediction.csv', delimiter=',', skip_header=1)
 
 M_list = [5, 10, 15, 20, 25, 30]
 train_t = HW1_data[:10000, 0]
 train_x = HW1_data[:10000, 1:]
-train_pred = pred_data[:10000, :]
+train_pred = train_pred_data
 test_t = HW1_data[10000:, 0]
 test_x = HW1_data[10000:, 1:]
-test_pred = pred_data[10000:, :]
+test_pred = test_pred_data
 
 train_mse = output_data[:6, 1]
 train_acc = output_data[:6, 2]
@@ -22,7 +23,7 @@ test_acc = output_data[:6, 4]
 
 # Plot
 
-pic_path = './pic4/'
+pic_path = './output/pic6/'
 if not os.path.exists(pic_path):
     os.mkdir(pic_path)
 
