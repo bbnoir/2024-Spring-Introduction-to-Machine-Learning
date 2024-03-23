@@ -12,6 +12,22 @@ typedef Eigen::Matrix<scalar_t, Eigen::Dynamic, Eigen::Dynamic> matrix_t;
 
 std::string out_dir = "./output/new_test/";
 
+// Parameters
+int N = 11; // number of features
+const int M_list[6] = {5, 10, 15, 20, 25, 30};
+const scalar_t s = 0.1;
+matrix_t u(6, 30);
+
+void init_parameters()
+{
+  for (int i = 0; i < 6; ++i)
+    for (int j = 1; j < M_list[i]; ++j)
+    {
+      scalar_t d_j = j, d_M = M_list[i];
+      u(i, j) = 3 * (-d_M + 1 + 2*(d_j-1)*(d_M-1)/(d_M-2)) / d_M;
+    }
+}
+
 scalar_t cal_mse(const vector_t &t, const vector_t &y)
 {
   return (t - y).array().square().sum() / t.size();
@@ -31,22 +47,6 @@ scalar_t cal_accuracy(const vector_t &t, const vector_t &y)
   return 1 - accuracy;
 }
 
-// Parameters
-int N = 11; // number of features
-const int M_list[6] = {5, 10, 15, 20, 25, 30};
-const scalar_t s = 0.1;
-matrix_t u(6, 30);
-
-void init_parameters()
-{
-  for (int i = 0; i < 6; ++i)
-    for (int j = 1; j < M_list[i]; ++j)
-    {
-      scalar_t d_j = j, d_M = M_list[i];
-      u(i, j) = 3 * (-d_M + 1 + 2*(d_j-1)*(d_M-1)/(d_M-2)) / d_M;
-    }
-}
-
 matrix_t design_matrix(const matrix_t &x, const int M, const scalar_t s, const vector_t &u)
 {
   int N = x.cols();
@@ -58,6 +58,18 @@ matrix_t design_matrix(const matrix_t &x, const int M, const scalar_t s, const v
       phi.col(i*M+j) = 1 / (1 + (-(x.col(i).array() - u(j)) / s).exp());
   }
   return phi;
+}
+
+// test for 6 M values
+void test_6_M(const vector_t *w, const matrix_t &x, const vector_t &t, vector_t *y, scalar_t *mse, scalar_t *accuracy)
+{
+  for (int i = 0; i < 6; ++i)
+  {
+    matrix_t phi = design_matrix(x, M_list[i], s, u.row(i));
+    y[i] = phi * w[i];
+    mse[i] = cal_mse(t, y[i]);
+    accuracy[i] = cal_accuracy(t, y[i]);
+  }
 }
 
 void show_accuracy(const scalar_t *train_mse, const scalar_t *train_accuracy, const scalar_t *test_mse, const scalar_t *test_accuracy, const scalar_t *demo_mse, const scalar_t *demo_accuracy)
@@ -157,6 +169,8 @@ int main()
   test_x = (test_x.rowwise() - mean.transpose()).array().rowwise() / std_dev.transpose().array();
   demo_x = (demo_x.rowwise() - mean.transpose()).array().rowwise() / std_dev.transpose().array();
 
+  // Part: Normal Linear Regression
+
   // Training
   vector_t w[6];
   vector_t train_y[6];
@@ -176,25 +190,13 @@ int main()
   vector_t test_y[6];
   scalar_t test_mse[6];
   scalar_t test_accuracy[6];
-  for (int i = 0; i < 6; ++i)
-  {
-    matrix_t phi = design_matrix(test_x, M_list[i], s, u.row(i));
-    test_y[i] = phi * w[i];
-    test_mse[i] = cal_mse(test_t, test_y[i]);
-    test_accuracy[i] = cal_accuracy(test_t, test_y[i]);
-  }
+  test_6_M(w, test_x, test_t, test_y, test_mse, test_accuracy);
 
   // Demo
   vector_t demo_y[6];
   scalar_t demo_mse[6];
   scalar_t demo_accuracy[6];
-  for (int i = 0; i < 6; ++i)
-  {
-    matrix_t phi = design_matrix(demo_x, M_list[i], s, u.row(i));
-    demo_y[i] = phi * w[i];
-    demo_mse[i] = cal_mse(demo_t, demo_y[i]);
-    demo_accuracy[i] = cal_accuracy(demo_t, demo_y[i]);
-  }
+  test_6_M(w, demo_x, demo_t, demo_y, demo_mse, demo_accuracy);
 
   // Show Accuracy
   show_accuracy(train_mse, train_accuracy, test_mse, test_accuracy, demo_mse, demo_accuracy);
@@ -204,4 +206,9 @@ int main()
   export_accuracy(out_dir + "accuracy.csv", train_mse, train_accuracy, test_mse, test_accuracy);
   export_prediction(out_dir + "train_prediction.csv", train_y);
   export_prediction(out_dir + "test_prediction.csv", test_y);
+
+  // Part: 5 Fold Cross Validation
+
+  // Part: Ridge Regression
+  
 }
