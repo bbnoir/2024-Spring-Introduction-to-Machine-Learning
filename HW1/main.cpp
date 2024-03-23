@@ -201,7 +201,7 @@ int main()
   // Show Accuracy
   show_accuracy(train_mse, train_accuracy, test_mse, test_accuracy, demo_mse, demo_accuracy);
 
-  // Output
+  // Export
   std::filesystem::create_directories(out_dir);
   export_accuracy(out_dir + "accuracy.csv", train_mse, train_accuracy, test_mse, test_accuracy);
   export_prediction(out_dir + "train_prediction.csv", train_y);
@@ -302,5 +302,10 @@ int main()
     std::cout << "Lambda: " << lambda_list[i] << "\n";
     show_accuracy(train_mse_ridge[i], train_accuracy_ridge[i], test_mse_ridge[i], test_accuracy_ridge[i], demo_mse_ridge[i], demo_accuracy_ridge[i]);
   }
+
+  // Export
+  export_accuracy(out_dir + "ridge_accuracy.csv", train_mse_ridge[0], train_accuracy_ridge[0], test_mse_ridge[0], test_accuracy_ridge[0]);
+  export_prediction(out_dir + "ridge_train_prediction.csv", train_y_ridge[0]);
+  export_prediction(out_dir + "ridge_test_prediction.csv", test_y_ridge[0]);
   
 }
