@@ -76,6 +76,7 @@ void show_accuracy(const scalar_t *train_mse, const scalar_t *train_accuracy, co
   for (int i = 0; i < 6; ++i)
     std::cout << "| " << M_list[i] << "\t| " << train_mse[i] << "\t| " << train_accuracy[i] << "\t\t| " << test_mse[i] << "\t| " << test_accuracy[i] << "\t\t| " << demo_mse[i] << "\t| " << demo_accuracy[i] << "\n";
   std::cout << "----------------------------------------------------------------------------------------------------------------------\n";
+  std::cout << "\n";
 }
 
 void export_accuracy(std::string filename, const scalar_t *train_mse, const scalar_t *train_accuracy, const scalar_t *test_mse, const scalar_t *test_accuracy)
@@ -221,8 +222,6 @@ int main()
   // Training
   vector_t w_cv[5][6];
   vector_t train_y_cv[5][6];
-  scalar_t train_mse_cv[5][6];
-  scalar_t train_accuracy_cv[5][6];
   vector_t val_y_cv[5][6];
   scalar_t val_mse_cv[5][6];
   scalar_t val_accuracy_cv[5][6];
@@ -248,15 +247,21 @@ int main()
       w_cv[j][i] = (phi.transpose() * phi).ldlt().solve(phi.transpose() * merge_train_t);
       // w_cv[j][i] = phi.completeOrthogonalDecomposition().pseudoInverse() * merge_train_t;
       train_y_cv[j][i] = phi * w_cv[j][i];
-      train_mse_cv[j][i] = cal_mse(merge_train_t, train_y_cv[j][i]);
-      train_accuracy_cv[j][i] = cal_accuracy(merge_train_t, train_y_cv[j][i]);
       test(w_cv[j][i], split_train_x[j], split_train_t[j], val_y_cv[j][i], val_mse_cv[j][i], val_accuracy_cv[j][i], i);
       accuracy_sum[i] += val_accuracy_cv[j][i];
     }
     if (accuracy_sum[i] > accuracy_sum[best_M_idx])
       best_M_idx = i;
+    std::cout << "M = " << M_list[i] << " Accuracy: " << accuracy_sum[i] << "\n";
   }
-  std::cout << "Best M: " << M_list[best_M_idx] << "\n";
+  std::cout << "Best M: " << M_list[best_M_idx] << "\n\n";
+
+  // Export Accuracy Sum
+  std::ofstream out_file(out_dir + "cv_accuracy_sum.csv");
+  out_file << "M,Accuracy\n";
+  for (int i = 0; i < 6; ++i)
+    out_file << M_list[i] << "," << accuracy_sum[i] << "\n";
+  out_file.close();
 
   // Part: Ridge Regression
 
