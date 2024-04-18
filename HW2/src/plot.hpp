@@ -18,7 +18,7 @@ DataLoader* GenPlotData(const int resolution) {
 
 void WritePlotData(vector_t* y, DataLoader* dl, const std::string& filename) {
     std::ofstream fout(filename);
-    fout << "x1,x2,y" << std::endl;
+    fout << "y" << '\n';
     for (int i = 0; i < dl->n_samples; i++)
-        fout << (*dl->x)(i, 0) << "," << (*dl->x)(i, 1) << "," << (*y)(i) << std::endl;
+        fout << (*y)(i) << '\n';
 }
