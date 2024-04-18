@@ -56,7 +56,7 @@ void GenModel::Train(DataLoader* dl_train) {
         (*bias)(i) = -0.5 * mean.row(i) * cov.inverse() * mean.row(i).transpose() + priors(i);
 }
 
-void GenModel::Test(DataLoader* dl_test) {
+vector_t GenModel::Test(DataLoader* dl_test) {
     this->dl_test = dl_test;
     matrix_t x = *dl_test->x;
     vector_t t = *dl_test->t;
@@ -68,4 +68,5 @@ void GenModel::Test(DataLoader* dl_test) {
     std::cout << "Accuracy: " << accuracy << std::endl;
     std::cout << "Confusion Matrix:" << std::endl;
     std::cout << ConfusionMatrix(&t, &pred, n_classes) << std::endl;
+    return pred;
 }

@@ -4,6 +4,7 @@
 class DataLoader {
 public:
     DataLoader(const std::string& filename);
+    DataLoader(matrix_t* x, vector_t* t);
 
 public:
     matrix_t* x;

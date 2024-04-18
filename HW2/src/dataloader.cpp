@@ -29,3 +29,13 @@ DataLoader::DataLoader(const std::string& filename) {
     for (int i = 0; i < 4; i++)
         (*priors)(i) = n_samples_per_class[i] / double(n_samples);
 }
+
+DataLoader::DataLoader(matrix_t* x, vector_t* t) {
+    this->x = x;
+    this->t = t;
+    n_samples = x->rows();
+    n_samples_per_class.clear();
+    for (int i = 0; i < 4; i++)
+        n_samples_per_class.emplace_back(0);
+    priors = nullptr;
+}

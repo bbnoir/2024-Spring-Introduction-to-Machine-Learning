@@ -1,5 +1,6 @@
 #pragma once
 #include "include.hpp"
+#include "dataloader.hpp"
 
 matrix_t ConfusionMatrix(vector_t* t, vector_t* y, int n_classes)
 {

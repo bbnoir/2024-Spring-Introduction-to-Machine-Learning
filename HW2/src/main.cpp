@@ -1,4 +1,5 @@
 #include "include.hpp"
+#include "plot.hpp"
 #include "dataloader.hpp"
 #include "gen_model.hpp"
 
@@ -16,6 +17,10 @@ int main()
     std::cout << std::endl;
     std::cout << "---- Testing ----" << std::endl;
     gen_model->Test(dl_test);
+
+    DataLoader* dl_plot = GenPlotData(1000);
+    vector_t plot_y = gen_model->Test(dl_plot);
+    WritePlotData(&plot_y, dl_plot, "results/gen_model.csv");
 
     return 0;
 }
