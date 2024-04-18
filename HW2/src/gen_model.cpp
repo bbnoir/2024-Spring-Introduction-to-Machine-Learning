@@ -1,4 +1,5 @@
 #include "gen_model.hpp"
+#include "utils.hpp"
 
 GenModel::GenModel(int n_features, int n_classes) {
     this->n_features = n_features;
@@ -65,4 +66,6 @@ void GenModel::Test(DataLoader* dl_test) {
     vector_t pred = Predict(&y);
     double accuracy = (pred.array() == t.array()).count() / double(n_samples);
     std::cout << "Accuracy: " << accuracy << std::endl;
+    std::cout << "Confusion Matrix:" << std::endl;
+    std::cout << ConfusionMatrix(&t, &pred, n_classes) << std::endl;
 }
