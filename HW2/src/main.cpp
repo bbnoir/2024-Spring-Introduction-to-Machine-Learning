@@ -9,28 +9,26 @@ int main()
     DataLoader* dl_train = new DataLoader("HW2_training.csv");
     DataLoader* dl_test = new DataLoader("HW2_testing.csv");
 
-    // std::cout << "==== Generative Model ====" << std::endl;
-    // GenModel* gen_model = new GenModel(2, 4);
-    // std::cout << std::endl;
-    // std::cout << "---- Training ----" << std::endl;
-    // gen_model->Train(dl_train);
-    // gen_model->Test(dl_train);
-    // std::cout << std::endl;
-    // std::cout << "---- Testing ----" << std::endl;
-    // gen_model->Test(dl_test);
+    std::cout << "=== Part 1: 4 classes ===\n\n";
+
+    std::cout << "==== Generative Model ====\n\n";
+    GenModel* gen_model = new GenModel(2, 4);
+    std::cout << "---- Training ----\n";
+    gen_model->Train(dl_train);
+    gen_model->Test(dl_train);
+    std::cout << "\n---- Testing ----\n";
+    gen_model->Test(dl_test);
 
     // DataLoader* dl_plot = GenPlotData(1000);
     // vector_t plot_y = gen_model->Test(dl_plot);
     // WritePlotData(&plot_y, dl_plot, "results/gen_model.csv");
 
-    std::cout << "==== Discriminative Model ====" << std::endl;
+    std::cout << "\n==== Discriminative Model ====\n";
     DisModel* dis_model = new DisModel(2, 4);
-    std::cout << std::endl;
-    std::cout << "---- Training ----" << std::endl;
+    std::cout << "\n---- Training ----\n";
     dis_model->Train(dl_train);
     dis_model->Test(dl_train);
-    std::cout << std::endl;
-    std::cout << "---- Testing ----" << std::endl;
+    std::cout << "\n---- Testing ----\n";
     dis_model->Test(dl_test);
 
     return 0;

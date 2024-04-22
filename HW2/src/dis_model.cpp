@@ -16,13 +16,6 @@ matrix_t DisModel::OneHot(vector_t* t) {
     return one_hot;
 }
 
-matrix_t DisModel::DiagnolMatrix(vector_t* x) {
-    matrix_t diag_x = matrix_t::Zero(x->size(), x->size());
-    for (int i = 0; i < x->size(); i++)
-        diag_x(i, i) = (*x)(i) * (1 - (*x)(i));
-    return diag_x;
-}
-
 matrix_t DisModel::DesignMatrix(matrix_t* x) {
     matrix_t design_x = matrix_t::Ones(x->rows(), x->cols() + 1);
     design_x.block(0, 1, x->rows(), x->cols()) = *x;
@@ -50,16 +43,21 @@ void DisModel::Train(DataLoader* dl_train) {
     int n_samples = dl_train->n_samples;
     matrix_t one_hot = OneHot(&t);
     matrix_t design_x = DesignMatrix(&x);
-    matrix_t weights = matrix_t::Random(n_classes, n_features+1);
-    double lr = 0.01;
-    for (int i = 0; i < 1000; i++) {
+    matrix_t weights = matrix_t::Zero(n_classes, n_features + 1);
+    for (int i = 0; i < 10; i++) {
         matrix_t y = design_x * weights.transpose();
         matrix_t softmax_y = Softmax(&y);
-        matrix_t error = one_hot - softmax_y;
+        matrix_t error = softmax_y - one_hot;
         matrix_t grad = design_x.transpose() * error;
-        weights += lr * grad;
+        for (int j = 0; j < n_classes; j++) {
+            matrix_t diagnol_y = (softmax_y.col(j).array() * (1 - softmax_y.col(j).array())).matrix().asDiagonal();
+            matrix_t hessian = design_x.transpose() * diagnol_y * design_x;
+            weights.row(j) -= hessian.completeOrthogonalDecomposition().pseudoInverse() * grad.col(j);
+        }
+        // this->weights = &weights;
+        // this->Test(dl_train);
     }
-    this->weights = &weights;
+    this->weights = new matrix_t(weights);
 }
 
 vector_t DisModel::Test(DataLoader* dl_test) {
