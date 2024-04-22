@@ -3,6 +3,24 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # %%
+data_train = np.genfromtxt('../HW2_training.csv', delimiter=',', skip_header=1)
+print(data_train.shape)
+
+# %%
+plt.figure(figsize=(6,6))
+plt.title("Data distribution")
+cs = plt.scatter(data_train[:, 1], data_train[:, 2], c=data_train[:, 0], cmap='viridis', alpha=0.5)
+plt.xlabel("Offensive")
+plt.ylabel("Defensive")
+plt.grid()
+plt.legend(*cs.legend_elements(), loc='upper left', bbox_to_anchor=(1, 1))
+plt.show()
+
+# %%
+# trurn class 3 to class 0
+data_train[data_train[:, 0] == 3.0, 0] = 0.0
+
+# %%
 y = np.genfromtxt('../results/gen_model.csv', delimiter=',', skip_header=1)
 
 # %%
