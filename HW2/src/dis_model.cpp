@@ -1,0 +1,89 @@
+#include "dis_model.hpp"
+
+DisModel::DisModel(int n_features, int n_classes) {
+    this->n_features = n_features;
+    this->n_classes = n_classes;
+    this->weights = new matrix_t(n_classes, n_features+1);
+    this->dl_train = nullptr;
+    this->dl_test = nullptr;
+}
+
+matrix_t DisModel::OneHot(vector_t* t) {
+    int n_samples = t->size();
+    matrix_t one_hot = matrix_t::Zero(n_samples, n_classes);
+    for (int i = 0; i < n_samples; i++)
+        one_hot(i, int((*t)(i))) = 1;
+    return one_hot;
+}
+
+matrix_t DisModel::DiagnolMatrix(vector_t* x) {
+    matrix_t diag_x = matrix_t::Zero(x->size(), x->size());
+    for (int i = 0; i < x->size(); i++)
+        diag_x(i, i) = (*x)(i) * (1 - (*x)(i));
+    return diag_x;
+}
+
+matrix_t DisModel::DesignMatrix(matrix_t* x) {
+    matrix_t design_x = matrix_t::Ones(x->rows(), x->cols() + 1);
+    design_x.block(0, 1, x->rows(), x->cols()) = *x;
+    return design_x;
+}
+
+matrix_t DisModel::Softmax(matrix_t* x) {
+    matrix_t exp_x = x->array().exp();
+    matrix_t sum_exp_x = exp_x.rowwise().sum();
+    matrix_t softmax_x = exp_x.array() / sum_exp_x.array().replicate(1, n_classes);
+    return softmax_x;
+}
+
+vector_t DisModel::Predict(matrix_t* x) {
+    vector_t pred = vector_t::Zero(x->rows());
+    for (int i = 0; i < x->rows(); i++)
+        x->row(i).maxCoeff(&pred(i));
+    return pred;
+}
+
+void DisModel::Train(DataLoader* dl_train) {
+    this->dl_train = dl_train;
+    matrix_t x = *dl_train->x;
+    vector_t t = *dl_train->t;
+    int n_samples = dl_train->n_samples;
+    matrix_t one_hot = OneHot(&t);
+    matrix_t design_x = DesignMatrix(&x);
+    matrix_t weights = matrix_t::Random(n_classes, n_features+1);
+    double lr = 0.01;
+    for (int i = 0; i < 1000; i++) {
+        matrix_t y = design_x * weights.transpose();
+        matrix_t softmax_y = Softmax(&y);
+        matrix_t error = one_hot - softmax_y;
+        matrix_t grad = design_x.transpose() * error;
+        weights += lr * grad;
+    }
+    this->weights = &weights;
+}
+
+vector_t DisModel::Test(DataLoader* dl_test) {
+    this->dl_test = dl_test;
+    matrix_t x = *dl_test->x;
+    vector_t t = *dl_test->t;
+    int n_samples = dl_test->n_samples;
+    matrix_t design_x = DesignMatrix(&x);
+    matrix_t y = design_x * (*weights).transpose();
+    matrix_t softmax_y = Softmax(&y);
+    vector_t pred = Predict(&softmax_y);
+    double accuracy = (pred.array() == t.array()).count() / double(n_samples);
+    std::cout << "Accuracy: " << accuracy << std::endl;
+    std::cout << "Confusion Matrix:" << std::endl;
+    std::cout << ConfusionMatrix(&t, &pred) << std::endl;
+    return pred;
+}
+
+matrix_t DisModel::ConfusionMatrix(vector_t* t, vector_t* y)
+{
+    matrix_t cm(n_classes, n_classes);
+    cm.setZero();
+    int n_samples = t->size();
+    for (int i = 0; i < n_samples; i++)
+        cm(int((*t)(i)), int((*y)(i)))++;
+    return cm;
+}
