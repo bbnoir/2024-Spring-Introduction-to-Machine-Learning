@@ -19,9 +19,9 @@ int main()
     std::cout << "\n---- Testing ----\n";
     gen_model->Test(dl_test);
 
-    // DataLoader* dl_plot = GenPlotData(1000);
-    // vector_t plot_y = gen_model->Test(dl_plot);
-    // WritePlotData(&plot_y, dl_plot, "results/gen_model.csv");
+    DataLoader* dl_plot = GenPlotData(1000);
+    vector_t gen_plot_y = gen_model->TestQuiet(dl_plot);
+    WritePlotData(&gen_plot_y, dl_plot, "results/gen_model.csv");
 
     std::cout << "\n==== Discriminative Model ====\n";
     DisModel* dis_model = new DisModel(2, 4);
@@ -30,6 +30,9 @@ int main()
     dis_model->Test(dl_train);
     std::cout << "\n---- Testing ----\n";
     dis_model->Test(dl_test);
+
+    vector_t dis_plot_y = dis_model->TestQuiet(dl_plot);
+    WritePlotData(&dis_plot_y, dl_plot, "results/dis_model.csv");
 
     return 0;
 }

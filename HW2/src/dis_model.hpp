@@ -7,9 +7,9 @@ public:
     DisModel(int n_features, int n_classes);
     void Train(DataLoader* dl_train);
     vector_t Test(DataLoader* dl_test);
+    vector_t TestQuiet(DataLoader* dl_test);
 
     matrix_t OneHot(vector_t* t);
-    matrix_t DiagnolMatrix(vector_t* x);
     matrix_t DesignMatrix(matrix_t* x);
     matrix_t Softmax(matrix_t* x);
     matrix_t ConfusionMatrix(vector_t* t, vector_t* y);

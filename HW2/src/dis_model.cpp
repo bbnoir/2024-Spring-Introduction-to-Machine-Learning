@@ -76,6 +76,18 @@ vector_t DisModel::Test(DataLoader* dl_test) {
     return pred;
 }
 
+vector_t DisModel::TestQuiet(DataLoader* dl_test) {
+    this->dl_test = dl_test;
+    matrix_t x = *dl_test->x;
+    vector_t t = *dl_test->t;
+    int n_samples = dl_test->n_samples;
+    matrix_t design_x = DesignMatrix(&x);
+    matrix_t y = design_x * (*weights).transpose();
+    matrix_t softmax_y = Softmax(&y);
+    vector_t pred = Predict(&softmax_y);
+    return pred;
+}
+
 matrix_t DisModel::ConfusionMatrix(vector_t* t, vector_t* y)
 {
     matrix_t cm(n_classes, n_classes);

@@ -7,6 +7,7 @@ public:
     GenModel(int n_features, int n_classes);
     void Train(DataLoader* dl_train);
     vector_t Test(DataLoader* dl_test);
+    vector_t TestQuiet(DataLoader* dl_test);
 
     matrix_t Mean(matrix_t* x, vector_t* t);
     matrix_t Cov(matrix_t* x, vector_t* t);

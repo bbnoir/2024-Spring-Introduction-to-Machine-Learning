@@ -70,6 +70,17 @@ vector_t GenModel::Test(DataLoader* dl_test) {
     return pred;
 }
 
+vector_t GenModel::TestQuiet(DataLoader* dl_test) {
+    this->dl_test = dl_test;
+    matrix_t x = *dl_test->x;
+    vector_t t = *dl_test->t;
+    int n_samples = dl_test->n_samples;
+    matrix_t y = x * (*weights) + (*bias).transpose().replicate(n_samples, 1);
+    y = Softmax(&y);
+    vector_t pred = Predict(&y);
+    return pred;
+}
+
 matrix_t GenModel::ConfusionMatrix(vector_t* t, vector_t* y)
 {
     matrix_t cm(n_classes, n_classes);
