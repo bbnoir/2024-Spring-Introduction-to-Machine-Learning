@@ -39,3 +39,15 @@ DataLoader::DataLoader(matrix_t* x, vector_t* t) {
         n_samples_per_class.emplace_back(0);
     priors = nullptr;
 }
+
+void DataLoader::TransClass3To0() {
+    for (int i = 0; i < n_samples; i++)
+        if ((*t)(i) == 3)
+            (*t)(i) = 0;
+    n_samples_per_class[0] += n_samples_per_class[3];
+    n_samples_per_class.pop_back();
+    delete priors;
+    priors = new vector_t(3);
+    for (int i = 0; i < 3; i++)
+        (*priors)(i) = n_samples_per_class[i] / double(n_samples);
+}
