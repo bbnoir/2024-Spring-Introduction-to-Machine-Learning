@@ -20,22 +20,15 @@ matrix_t GenModel::Mean(matrix_t* x, vector_t* t) {
     return mean;
 }
 
-matrix_t GenModel::Cov(matrix_t* x, vector_t* t) {
+matrix_t GenModel::Cov(matrix_t* x, vector_t* t, matrix_t* mean) {
     matrix_t cov = matrix_t::Zero(n_features, n_features);
     int n_samples = dl_train->n_samples;
     std::vector<int> n_samples_per_class = dl_train->n_samples_per_class;
-    std::vector<matrix_t> mean_per_class(n_classes);
-    for (int i = 0; i < n_classes; i++)
-        mean_per_class[i] = matrix_t::Zero(n_features, 1);
-    for (int i = 0; i < n_samples; i++)
-        mean_per_class[(*t)(i)] += x->row(i).transpose();
-    for (int i = 0; i < n_classes; i++)
-        mean_per_class[i] /= n_samples_per_class[i];
     std::vector<matrix_t> cov_per_class(n_classes);
     for (int i = 0; i < n_classes; i++)
         cov_per_class[i] = matrix_t::Zero(n_features, n_features);
     for (int i = 0; i < n_samples; i++)
-        cov_per_class[(*t)(i)] += (x->row(i) - mean_per_class[(*t)(i)].transpose()).transpose() * (x->row(i) - mean_per_class[(*t)(i)].transpose());
+        cov_per_class[(*t)(i)] += (x->row(i) - mean->row((*t)(i))).transpose() * (x->row(i) - mean->row((*t)(i)));
     for (int i = 0; i < n_classes; i++)
         cov_per_class[i] /= n_samples_per_class[i]-1;
     for (int i = 0; i < n_classes; i++)
@@ -61,7 +54,7 @@ vector_t GenModel::Predict(matrix_t* x) {
 void GenModel::Train(DataLoader* dl_train) {
     this->dl_train = dl_train;
     matrix_t mean = Mean(dl_train->x, dl_train->t);
-    matrix_t cov = Cov(dl_train->x, dl_train->t);
+    matrix_t cov = Cov(dl_train->x, dl_train->t, &mean);
     weights = new matrix_t(cov.inverse() * mean.transpose());
     vector_t priors = (*dl_train->priors).array().log();
     bias = new vector_t(n_classes);
@@ -70,21 +63,15 @@ void GenModel::Train(DataLoader* dl_train) {
 }
 
 vector_t GenModel::Test(DataLoader* dl_test) {
-    this->dl_test = dl_test;
-    matrix_t x = *dl_test->x;
-    vector_t t = *dl_test->t;
-    int n_samples = dl_test->n_samples;
-    matrix_t y = x * (*weights) + (*bias).transpose().replicate(n_samples, 1);
-    y = Softmax(&y);
-    vector_t pred = Predict(&y);
-    double accuracy = (pred.array() == t.array()).count() / double(n_samples);
+    vector_t pred = GenPredict(dl_test);
+    double accuracy = (pred.array() == (*dl_test->t).array()).count() / double(dl_test->n_samples);
     std::cout << "Accuracy: " << accuracy << std::endl;
     std::cout << "Confusion Matrix:" << std::endl;
-    std::cout << ConfusionMatrix(&t, &pred) << std::endl;
+    std::cout << ConfusionMatrix(dl_test->t, &pred) << std::endl;
     return pred;
 }
 
-vector_t GenModel::TestQuiet(DataLoader* dl_test) {
+vector_t GenModel::GenPredict(DataLoader* dl_test) {
     this->dl_test = dl_test;
     matrix_t x = *dl_test->x;
     vector_t t = *dl_test->t;

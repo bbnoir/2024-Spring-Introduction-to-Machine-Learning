@@ -44,6 +44,9 @@ void DisModel::Train(DataLoader* dl_train) {
     matrix_t one_hot = OneHot(&t);
     matrix_t design_x = DesignMatrix(&x);
     matrix_t weights = matrix_t::Zero(n_classes, n_features + 1);
+    std::string filename = "results/dis_train_" + std::to_string(n_classes) + ".csv";
+    std::ofstream fout(filename);
+    fout << "Iteration,Accuracy\n";
     for (int i = 0; i < 10; i++) {
         matrix_t y = design_x * weights.transpose();
         matrix_t softmax_y = Softmax(&y);
@@ -54,29 +57,22 @@ void DisModel::Train(DataLoader* dl_train) {
             matrix_t hessian = design_x.transpose() * diagnol_y * design_x;
             weights.row(j) -= hessian.completeOrthogonalDecomposition().pseudoInverse() * grad.col(j);
         }
-        // this->weights = &weights;
-        // this->Test(dl_train);
+        this->weights = &weights;
+        fout << i+1 << "," << (GenPredict(dl_train).array() == t.array()).count() / double(n_samples) << "\n";
     }
     this->weights = new matrix_t(weights);
 }
 
 vector_t DisModel::Test(DataLoader* dl_test) {
-    this->dl_test = dl_test;
-    matrix_t x = *dl_test->x;
-    vector_t t = *dl_test->t;
-    int n_samples = dl_test->n_samples;
-    matrix_t design_x = DesignMatrix(&x);
-    matrix_t y = design_x * (*weights).transpose();
-    matrix_t softmax_y = Softmax(&y);
-    vector_t pred = Predict(&softmax_y);
-    double accuracy = (pred.array() == t.array()).count() / double(n_samples);
+    vector_t pred = GenPredict(dl_test);
+    double accuracy = (pred.array() == (*dl_test->t).array()).count() / double(dl_test->n_samples);
     std::cout << "Accuracy: " << accuracy << std::endl;
     std::cout << "Confusion Matrix:" << std::endl;
-    std::cout << ConfusionMatrix(&t, &pred) << std::endl;
+    std::cout << ConfusionMatrix(dl_test->t, &pred) << std::endl;
     return pred;
 }
 
-vector_t DisModel::TestQuiet(DataLoader* dl_test) {
+vector_t DisModel::GenPredict(DataLoader* dl_test) {
     this->dl_test = dl_test;
     matrix_t x = *dl_test->x;
     vector_t t = *dl_test->t;
