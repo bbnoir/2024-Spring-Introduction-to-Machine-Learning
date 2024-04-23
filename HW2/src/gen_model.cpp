@@ -23,10 +23,24 @@ matrix_t GenModel::Mean(matrix_t* x, vector_t* t) {
 matrix_t GenModel::Cov(matrix_t* x, vector_t* t) {
     matrix_t cov = matrix_t::Zero(n_features, n_features);
     int n_samples = dl_train->n_samples;
-    matrix_t mean = x->colwise().mean();
+    std::vector<int> n_samples_per_class = dl_train->n_samples_per_class;
+    std::vector<matrix_t> mean_per_class(n_classes);
+    for (int i = 0; i < n_classes; i++)
+        mean_per_class[i] = matrix_t::Zero(n_features, 1);
     for (int i = 0; i < n_samples; i++)
-        cov += (x->row(i) - mean).transpose() * (x->row(i) - mean);
-    cov /= n_samples-1;
+        mean_per_class[(*t)(i)] += x->row(i).transpose();
+    for (int i = 0; i < n_classes; i++)
+        mean_per_class[i] /= n_samples_per_class[i];
+    std::vector<matrix_t> cov_per_class(n_classes);
+    for (int i = 0; i < n_classes; i++)
+        cov_per_class[i] = matrix_t::Zero(n_features, n_features);
+    for (int i = 0; i < n_samples; i++)
+        cov_per_class[(*t)(i)] += (x->row(i) - mean_per_class[(*t)(i)].transpose()).transpose() * (x->row(i) - mean_per_class[(*t)(i)].transpose());
+    for (int i = 0; i < n_classes; i++)
+        cov_per_class[i] /= n_samples_per_class[i]-1;
+    for (int i = 0; i < n_classes; i++)
+        cov += cov_per_class[i] * n_samples_per_class[i];
+    cov /= n_samples;
     return cov;
 }
 
