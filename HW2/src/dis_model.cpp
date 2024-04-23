@@ -44,9 +44,9 @@ void DisModel::Train(DataLoader* dl_train) {
     matrix_t one_hot = OneHot(&t);
     matrix_t design_x = DesignMatrix(&x);
     matrix_t weights = matrix_t::Zero(n_classes, n_features + 1);
-    std::string filename = "results/dis_train_" + std::to_string(n_classes) + ".csv";
-    std::ofstream fout(filename);
-    fout << "Iteration,Accuracy\n";
+    // std::string filename = "results/dis_train_" + std::to_string(n_classes) + ".csv";
+    // std::ofstream fout(filename);
+    // fout << "Iteration,Accuracy\n";
     for (int i = 0; i < 10; i++) {
         matrix_t y = design_x * weights.transpose();
         matrix_t softmax_y = Softmax(&y);
@@ -57,10 +57,20 @@ void DisModel::Train(DataLoader* dl_train) {
             matrix_t hessian = design_x.transpose() * diagnol_y * design_x;
             weights.row(j) -= hessian.completeOrthogonalDecomposition().pseudoInverse() * grad.col(j);
         }
-        this->weights = &weights;
-        fout << i+1 << "," << (GenPredict(dl_train).array() == t.array()).count() / double(n_samples) << "\n";
+        // this->weights = &weights;
+        // fout << i+1 << "," << (GenPredict(dl_train).array() == t.array()).count() / double(n_samples) << "\n";
     }
     this->weights = new matrix_t(weights);
+    // dl_test = dl_train;
+    // vector_t pred = GenPredict(dl_test);
+    // double accuracy = (pred.array() == (*dl_test->t).array()).count() / double(dl_test->n_samples);
+    // std::string filename2 = "results/dis_train_confusion_" + std::to_string(n_classes) + ".csv";
+    // std::ofstream fout2(filename2);
+    // for (int i = 0; i < n_classes; i++) {
+    //     for (int j = 0; j < n_classes-1; j++)
+    //         fout2 << ConfusionMatrix(dl_test->t, &pred)(i, j) << ",";
+    //     fout2 << ConfusionMatrix(dl_test->t, &pred)(i, n_classes-1) << "\n";
+    // }
 }
 
 vector_t DisModel::Test(DataLoader* dl_test) {
@@ -69,6 +79,13 @@ vector_t DisModel::Test(DataLoader* dl_test) {
     std::cout << "Accuracy: " << accuracy << std::endl;
     std::cout << "Confusion Matrix:" << std::endl;
     std::cout << ConfusionMatrix(dl_test->t, &pred) << std::endl;
+    // std::string filename = "results/dis_test_confusion_" + std::to_string(n_classes) + ".csv";
+    // std::ofstream fout(filename);
+    // for (int i = 0; i < n_classes; i++) {
+    //     for (int j = 0; j < n_classes-1; j++)
+    //         fout << ConfusionMatrix(dl_test->t, &pred)(i, j) << ",";
+    //     fout << ConfusionMatrix(dl_test->t, &pred)(i, n_classes-1) << "\n";
+    // }
     return pred;
 }
 

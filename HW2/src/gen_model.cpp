@@ -60,6 +60,15 @@ void GenModel::Train(DataLoader* dl_train) {
     bias = new vector_t(n_classes);
     for (int i = 0; i < n_classes; i++)
         (*bias)(i) = -0.5 * mean.row(i) * cov.inverse() * mean.row(i).transpose() + priors(i);
+    // vector_t pred = GenPredict(dl_train);
+    // double accuracy = (pred.array() == (*dl_train->t).array()).count() / double(dl_train->n_samples);
+    // std::string filename = "results/gen_train_confusion_" + std::to_string(n_classes) + ".csv";
+    // std::ofstream fout(filename);
+    // for (int i = 0; i < n_classes; i++) {
+    //     for (int j = 0; j < n_classes-1; j++)
+    //         fout << ConfusionMatrix(dl_train->t, &pred)(i, j) << ",";
+    //     fout << ConfusionMatrix(dl_train->t, &pred)(i, n_classes-1) << "\n";
+    // }
 }
 
 vector_t GenModel::Test(DataLoader* dl_test) {
@@ -68,6 +77,13 @@ vector_t GenModel::Test(DataLoader* dl_test) {
     std::cout << "Accuracy: " << accuracy << std::endl;
     std::cout << "Confusion Matrix:" << std::endl;
     std::cout << ConfusionMatrix(dl_test->t, &pred) << std::endl;
+    // std::string filename = "results/gen_test_confusion_" + std::to_string(n_classes) + ".csv";
+    // std::ofstream fout(filename);
+    // for (int i = 0; i < n_classes; i++) {
+    //     for (int j = 0; j < n_classes-1; j++)
+    //         fout << ConfusionMatrix(dl_test->t, &pred)(i, j) << ",";
+    //     fout << ConfusionMatrix(dl_test->t, &pred)(i, n_classes-1) << "\n";
+    // }
     return pred;
 }
 

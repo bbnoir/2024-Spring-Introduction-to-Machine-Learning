@@ -31,6 +31,7 @@ plt.ylabel("Defensive")
 plt.grid()
 proxy = [plt.Rectangle((0,0),1,1,fc = pc.get_facecolor()[0]) for pc in cs.collections]
 plt.legend(proxy, ["Team 0", "Team 1", "Team 2", "Team 3"], loc='upper left', bbox_to_anchor=(1, 1))
+plt.savefig('../plots/gen_model_boundary.png')
 plt.show()
 
 # %%
@@ -49,6 +50,7 @@ plt.ylabel("Defensive")
 plt.grid()
 proxy = [plt.Rectangle((0,0),1,1,fc = pc.get_facecolor()[0]) for pc in cs.collections]
 plt.legend(proxy, ["Team 0", "Team 1", "Team 2", "Team 3"], loc='upper left', bbox_to_anchor=(1, 1))
+plt.savefig('../plots/dis_model_boundary.png')
 plt.show()
 
 # %%
@@ -70,6 +72,7 @@ plt.ylabel("Defensive")
 plt.grid()
 proxy = [plt.Rectangle((0,0),1,1,fc = pc.get_facecolor()[0]) for pc in cs.collections]
 plt.legend(proxy, ["Class A", "Class B", "Class C"], loc='upper left', bbox_to_anchor=(1, 1))
+plt.savefig('../plots/gen_model2_boundary.png')
 plt.show()
 
 # %%
@@ -88,6 +91,7 @@ plt.ylabel("Defensive")
 plt.grid()
 proxy = [plt.Rectangle((0,0),1,1,fc = pc.get_facecolor()[0]) for pc in cs.collections]
 plt.legend(proxy, ["Class A", "Class B", "Class C"], loc='upper left', bbox_to_anchor=(1, 1))
+plt.savefig('../plots/dis_model2_boundary.png')
 plt.show()
 
 # %%
