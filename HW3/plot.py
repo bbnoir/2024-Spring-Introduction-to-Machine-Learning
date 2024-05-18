@@ -125,6 +125,9 @@ def plot_part3():
     axs2[1].set_xlabel("Epoch")
     axs2[1].set_ylabel("Accuracy")
     plt.savefig("./plots/part3_2.png")
+
+def plot_part4():
+    pass
     
 
 def main():
@@ -139,6 +142,8 @@ def main():
         plot_part2()
     elif args.part == "3":
         plot_part3()
+    elif args.part == "4":
+        plot_part4()
     elif args.history is None:
         print("Please specify a history file")
     else:
