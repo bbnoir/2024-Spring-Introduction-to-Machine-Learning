@@ -2,7 +2,6 @@ import numpy as np
 import torch
 import matplotlib.pyplot as plt
 import argparse
-from matplotlib.ticker import MaxNLocator
 
 def plot_accuracy(history):
     train_accuracy = [x["train_accuracy"] for x in history]
