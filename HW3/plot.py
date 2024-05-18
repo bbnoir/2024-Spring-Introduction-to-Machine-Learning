@@ -127,7 +127,41 @@ def plot_part3():
     plt.savefig("./plots/part3_2.png")
 
 def plot_part4():
-    pass
+    num_hidden_layers_list = [1, 2, 3, 4, 5, 6]
+    fig, axs = plt.subplots(2, 3, figsize=(15, 10))
+    fig.subplots_adjust(wspace=0.3, hspace=0.3)
+    for i, num_hidden_layers in enumerate(num_hidden_layers_list):
+        history_path = f"./history/hw2_num_hidden_layers_{num_hidden_layers}.pkl"
+        history = torch.load(history_path)
+        train_accuracy = [x["train_accuracy"] for x in history]
+        test_accuracy = [x["test_accuracy"] for x in history]
+        axs[i//3, i%3].plot(train_accuracy, '-o', label="Training accuracy")
+        axs[i//3, i%3].plot(test_accuracy, '-o', label="Testing accuracy")
+        axs[i//3, i%3].set_title(f"# Hidden Layers = {num_hidden_layers}")
+        axs[i//3, i%3].legend(loc="lower right")
+        axs[i//3, i%3].set_xlabel("Epoch")
+        axs[i//3, i%3].set_ylabel("Accuracy")
+    plt.suptitle("Accuracy for Different Number of Hidden Layers on HW2 Dataset")
+    plt.savefig("./plots/part4_1.png")
+    
+    fig2, axs2 = plt.subplots(1, 2, figsize=(12, 5))
+    fig2.subplots_adjust(wspace=0.3)
+    for i, num_hidden_layers in enumerate(num_hidden_layers_list):
+        history_path = f"./history/hw2_num_hidden_layers_{num_hidden_layers}.pkl"
+        history = torch.load(history_path)
+        train_accuracy = [x["train_accuracy"] for x in history]
+        test_accuracy = [x["test_accuracy"] for x in history]
+        axs2[0].plot(train_accuracy, label=f"# Hidden Layers = {num_hidden_layers}")
+        axs2[1].plot(test_accuracy, label=f"# Hidden Layers = {num_hidden_layers}")
+    axs2[0].set_title("Training Accuracy for Different # Hidden Layers on HW2 Dataset")
+    axs2[0].legend()
+    axs2[0].set_xlabel("Epoch")
+    axs2[0].set_ylabel("Accuracy")
+    axs2[1].set_title("Testing Accuracy for Different # Hidden Layers on HW2 Dataset")
+    axs2[1].legend()
+    axs2[1].set_xlabel("Epoch")
+    axs2[1].set_ylabel("Accuracy")
+    plt.savefig("./plots/part4_2.png")
     
 
 def main():

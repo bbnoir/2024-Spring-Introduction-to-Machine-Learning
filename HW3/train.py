@@ -13,8 +13,9 @@ def avoid_randomness(seed):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
-def train(model, trainloader, testloader, criterion, optimizer, n_epochs, device, n_class):
+def train(model, trainloader, testloader, criterion, optimizer, n_epochs, device, n_class, save_path=None):
     history = []
+    best_accuracy = 0
     for epoch in range(n_epochs):
         result = {}
         model.train()
@@ -42,7 +43,13 @@ def train(model, trainloader, testloader, criterion, optimizer, n_epochs, device
                 correct += (outputs.argmax(1) == labels).sum().item()
         result["test_accuracy"] = correct / total
         history.append(result)
-        print(f"Epoch {epoch+1}/{n_epochs}: train_accuracy={result['train_accuracy']}, test_accuracy={result['test_accuracy']}")
+        print(f"Epoch {epoch+1}/{n_epochs}: train_accuracy={result['train_accuracy']}, test_accuracy={result['test_accuracy']}, best_accuracy={best_accuracy}")
+        # Save the model if the test accuracy is the best
+        if result["test_accuracy"] > best_accuracy:
+            best_accuracy = result["test_accuracy"]
+            if save_path is not None:
+                torch.save(model.state_dict(), save_path)
+
     return history
 
 def main():
@@ -121,14 +128,14 @@ def main():
     elif args.part == "4":
         # Part 2: Train on the dataset of HW2
         print("Part 2: Train on the dataset of HW2")
-        num_hidden_layers_list = [1, 2, 3, 4, 5]
-        n_epochs = 30
+        num_hidden_layers_list = [1, 2, 3, 4, 5, 6]
+        n_epochs = 50
         for num_hidden_layers in num_hidden_layers_list:
             avoid_randomness(random_seed)
             print(f"Start training with num_hidden_layers={num_hidden_layers}")
             model = DNN(2, 4, 100, num_hidden_layers).to(device)
             optimizer = torch.optim.Adam(model.parameters())
-            history = train(model, trainloader, testloader, criterion, optimizer, n_epochs, device, 4)
+            history = train(model, trainloader, testloader, criterion, optimizer, n_epochs, device, 4, f"./models/hw2_num_hidden_layers_{num_hidden_layers}.pth")
             history_path = f"./history/hw2_num_hidden_layers_{num_hidden_layers}.pkl"
             torch.save(history, history_path)
             print(f"Saving history to {history_path}")
