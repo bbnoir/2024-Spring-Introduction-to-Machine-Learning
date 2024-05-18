@@ -16,20 +16,20 @@ def plot_accuracy(history):
 
 def plot_part1():
     hidden_dim_list = [5, 10, 20, 50, 75, 100]
-    fig, axs = plt.subplots(2, 3, figsize=(15, 10))
+    fig, axs = plt.subplots(3, 2, figsize=(10, 12))
     fig.subplots_adjust(wspace=0.3, hspace=0.3)
+    fig.subplots_adjust(left=0.1, right=0.96, top=0.96, bottom=0.04)
     for i, hidden_dim in enumerate(hidden_dim_list):
         history_path = f"./history/hiddendim_{hidden_dim}_layer_1.pkl"
         history = torch.load(history_path)
         train_accuracy = [x["train_accuracy"] for x in history]
         test_accuracy = [x["test_accuracy"] for x in history]
-        axs[i//3, i%3].plot(train_accuracy, '-o', label="Training accuracy")
-        axs[i//3, i%3].plot(test_accuracy, '-o', label="Testing accuracy")
-        axs[i//3, i%3].set_title(f"# Neurons = {hidden_dim}")
-        axs[i//3, i%3].legend(loc="lower right")
-        axs[i//3, i%3].set_xlabel("Epoch")
-        axs[i//3, i%3].set_ylabel("Accuracy")
-    plt.suptitle("Accuracy for Different Number of Neurons")
+        axs[i//2, i%2].plot(train_accuracy, '-o', label="Training accuracy")
+        axs[i//2, i%2].plot(test_accuracy, '-o', label="Testing accuracy")
+        axs[i//2, i%2].set_title(f"# Neurons = {hidden_dim}")
+        axs[i//2, i%2].legend(loc="lower right")
+        axs[i//2, i%2].set_xlabel("Epoch")
+        axs[i//2, i%2].set_ylabel("Accuracy")
     plt.savefig("./plots/part1_1.png")
 
     fig2, axs2 = plt.subplots(1, 2, figsize=(12, 5))
@@ -55,6 +55,7 @@ def plot_part2():
     train_data_size_list = [10000, 20000, 30000, 60000]
     fig, axs = plt.subplots(2, 2, figsize=(10, 10))
     fig.subplots_adjust(wspace=0.3, hspace=0.3)
+    fig.subplots_adjust(left=0.1, right=0.96, top=0.96, bottom=0.04)
     for i, train_data_size in enumerate(train_data_size_list):
         history_path = f"./history/train_data_size_{train_data_size}.pkl"
         history = torch.load(history_path)
@@ -66,7 +67,6 @@ def plot_part2():
         axs[i//2, i%2].legend(loc="lower right")
         axs[i//2, i%2].set_xlabel("Epoch")
         axs[i//2, i%2].set_ylabel("Accuracy")
-    plt.suptitle("Accuracy for Different Number of Training Data")
     plt.savefig("./plots/part2_1.png")
     
     fig2, axs2 = plt.subplots(1, 2, figsize=(12, 5))
@@ -90,20 +90,20 @@ def plot_part2():
     
 def plot_part3():
     num_hidden_layers_list = [1, 2, 3, 4, 5]
-    fig, axs = plt.subplots(2, 3, figsize=(15, 10))
+    fig, axs = plt.subplots(3, 2, figsize=(10, 15))
     fig.subplots_adjust(wspace=0.3, hspace=0.3)
+    fig.subplots_adjust(left=0.1, right=0.96, top=0.96, bottom=0.04)
     for i, num_hidden_layers in enumerate(num_hidden_layers_list):
         history_path = f"./history/num_hidden_layers_{num_hidden_layers}.pkl"
         history = torch.load(history_path)
         train_accuracy = [x["train_accuracy"] for x in history]
         test_accuracy = [x["test_accuracy"] for x in history]
-        axs[i//3, i%3].plot(train_accuracy, '-o', label="Training accuracy")
-        axs[i//3, i%3].plot(test_accuracy, '-o', label="Testing accuracy")
-        axs[i//3, i%3].set_title(f"# Hidden Layers = {num_hidden_layers}")
-        axs[i//3, i%3].legend(loc="lower right")
-        axs[i//3, i%3].set_xlabel("Epoch")
-        axs[i//3, i%3].set_ylabel("Accuracy")
-    plt.suptitle("Accuracy for Different Number of Hidden Layers")
+        axs[i//2, i%2].plot(train_accuracy, '-o', label="Training accuracy")
+        axs[i//2, i%2].plot(test_accuracy, '-o', label="Testing accuracy")
+        axs[i//2, i%2].set_title(f"# Hidden Layers = {num_hidden_layers}")
+        axs[i//2, i%2].legend(loc="lower right")
+        axs[i//2, i%2].set_xlabel("Epoch")
+        axs[i//2, i%2].set_ylabel("Accuracy")
     plt.savefig("./plots/part3_1.png")
     
     fig2, axs2 = plt.subplots(1, 2, figsize=(12, 5))
@@ -127,20 +127,20 @@ def plot_part3():
 
 def plot_part4():
     num_hidden_layers_list = [1, 2, 3, 4, 5, 6]
-    fig, axs = plt.subplots(2, 3, figsize=(15, 10))
+    fig, axs = plt.subplots(3, 2, figsize=(10, 15))
     fig.subplots_adjust(wspace=0.3, hspace=0.3)
+    fig.subplots_adjust(left=0.1, right=0.96, top=0.96, bottom=0.04)
     for i, num_hidden_layers in enumerate(num_hidden_layers_list):
         history_path = f"./history/hw2_num_hidden_layers_{num_hidden_layers}.pkl"
         history = torch.load(history_path)
         train_accuracy = [x["train_accuracy"] for x in history]
         test_accuracy = [x["test_accuracy"] for x in history]
-        axs[i//3, i%3].plot(train_accuracy, '-o', label="Training accuracy")
-        axs[i//3, i%3].plot(test_accuracy, '-o', label="Testing accuracy")
-        axs[i//3, i%3].set_title(f"# Hidden Layers = {num_hidden_layers}")
-        axs[i//3, i%3].legend(loc="lower right")
-        axs[i//3, i%3].set_xlabel("Epoch")
-        axs[i//3, i%3].set_ylabel("Accuracy")
-    plt.suptitle("Accuracy for Different Number of Hidden Layers on HW2 Dataset")
+        axs[i//2, i%2].plot(train_accuracy, '-o', label="Training accuracy")
+        axs[i//2, i%2].plot(test_accuracy, '-o', label="Testing accuracy")
+        axs[i//2, i%2].set_title(f"# Hidden Layers = {num_hidden_layers}")
+        axs[i//2, i%2].legend(loc="lower right")
+        axs[i//2, i%2].set_xlabel("Epoch")
+        axs[i//2, i%2].set_ylabel("Accuracy")
     plt.savefig("./plots/part4_1.png")
     
     fig2, axs2 = plt.subplots(1, 2, figsize=(12, 5))
@@ -152,11 +152,11 @@ def plot_part4():
         test_accuracy = [x["test_accuracy"] for x in history]
         axs2[0].plot(train_accuracy, label=f"# Hidden Layers = {num_hidden_layers}")
         axs2[1].plot(test_accuracy, label=f"# Hidden Layers = {num_hidden_layers}")
-    axs2[0].set_title("Training Accuracy for Different # Hidden Layers on HW2 Dataset")
+    axs2[0].set_title("Training Accuracy on HW2 Dataset")
     axs2[0].legend()
     axs2[0].set_xlabel("Epoch")
     axs2[0].set_ylabel("Accuracy")
-    axs2[1].set_title("Testing Accuracy for Different # Hidden Layers on HW2 Dataset")
+    axs2[1].set_title("Testing Accuracy on HW2 Dataset")
     axs2[1].legend()
     axs2[1].set_xlabel("Epoch")
     axs2[1].set_ylabel("Accuracy")
