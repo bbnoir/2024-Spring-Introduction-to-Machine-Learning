@@ -6,15 +6,23 @@
 
 #### 1.1.1. Different number of neurons in one hidden layer
 
-#### 1.1.2. Different number of training datas
+The results of Figure 1 show that the training accuracy and the test accuracy increase as the number of neurons in one hidden layer increases. Also, the results of Figure 4 show that the training accuracy is usually a little higher than the test accuracy. This is because the model is optimized to fit the training data, so the training accuracy is usually higher than the test accuracy. On the other hand, the accuracy from the model of 5 neurons in one hidden layer is significantly lower than the other models. This is because the model is too simple to learn the complex relationship between the input and output.
+
+#### 1.1.2. Different number of training data
+
+The results of Figure 2 show that the training accuracy and the test accuracy increase as the number of training data increases. This is much reasonable since the model can learn better with more training data, namely, the model can generalize better with more training data. Also, the results of Figure 5 show that the training accuracy converges quickly for all models, but the overall testing accuracy is lower for the model with fewer training data.
 
 #### 1.1.3. Different number of hidden layers
+
+The results of Figure 3 show that the training accuracy and the test accuracy decrease as the number of hidden layers increases. This is because the model is too complex to learn the relationship between the input and output, which may lead to overfitting. Also, the testing accuracy has ripple patterns, which may be caused by the randomness and the overfitting of the model.
 
 ### 1.2. Part 2: DNN on HW2 Dataset
 
 #### 1.2.1. Result of Training
 
 #### 1.2.2. Comparison with the traditional method
+
+The testing accuracy of the DNN model is higher than the traditional method. This is because the DNN model can learn the non-linear relationship between the input and output, which may lead to better performance. Also, the decision boundary of the DNN model is more complex than the traditional method as shown in Figure 9, which can fit different data distribution better.
 
 
 ## 2. Implementation
@@ -25,7 +33,7 @@ I implemented the DNN model with PyTorch. The plotting is done with matplotlib.
 
 ```python
 class DNN(nn.Module):
-    def __init__(self, input_dim, output_dim, hidden_dim, num_hidden_layers):
+    def __init__(self, input_dim, output_dim, hidden_dim, num_hidden_layers, batch_norm):
         super(DNN, self).__init__()
 
         self.input_dim = input_dim
@@ -35,10 +43,13 @@ class DNN(nn.Module):
         seq.append(nn.ReLU())
         for _ in range(num_hidden_layers):
             seq.append(nn.Linear(hidden_dim, hidden_dim))
+            if batch_norm:
+                seq.append(nn.BatchNorm1d(hidden_dim))
             seq.append(nn.ReLU())
         seq.append(nn.Linear(hidden_dim, output_dim))
         
         self.seq = nn.Sequential(*seq)
+        
         
     def forward(self, x):
         x = x.view(-1, self.input_dim)
@@ -47,7 +58,7 @@ class DNN(nn.Module):
         return x
 ```
 
-I implemented the DNN model with numbers of Linear layers followed by ReLU activation function. The number of hidden layers and the number of neurons in each hidden layer can be set by parameters for convenience among different experiments. The output layer is followed by a softmax function. The input data is first reshaped to a 1D tensor.
+I implemented the DNN model with numbers of Linear layers followed by ReLU activation function. The number of hidden layers and the number of neurons in each hidden layer can be set by parameters for convenience among different experiments. The output layer is followed by a softmax function. The input data is first reshaped to a 1D tensor. Also, I added the batch normalization layer as an option for part 2.
 
 ### 2.2. Training and Testing
 
@@ -93,7 +104,7 @@ The major training and testing process is implemented in the above function. The
 
 ```python
 criterion = torch.nn.CrossEntropyLoss()
-model = DNN(784, 10, hidden_dim, 1).to(device)
+model = DNN(784, 10, hidden_dim, 1, False).to(device)
 optimizer = torch.optim.Adam(model.parameters())
 history = train(model, trainloader, testloader, criterion, optimizer, n_epochs, device, 10)
 ```

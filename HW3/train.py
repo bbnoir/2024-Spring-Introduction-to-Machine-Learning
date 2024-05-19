@@ -57,7 +57,7 @@ def main():
     parser.add_argument("-p", "--part", dest="part", required=True, help="part number")
     args = parser.parse_args()
 
-    train_batch_size = 32
+    train_batch_size = 64
 
     if args.part != "4":
         # Load MNIST dataset
@@ -91,7 +91,7 @@ def main():
         for hidden_dim in hidden_dim_list:
             avoid_randomness(random_seed)
             print(f"Start training with hidden_dim={hidden_dim}")
-            model = DNN(784, 10, hidden_dim, 1).to(device)
+            model = DNN(784, 10, hidden_dim, 1, False).to(device)
             optimizer = torch.optim.Adam(model.parameters())
             history = train(model, trainloader, testloader, criterion, optimizer, n_epochs, device, 10)
             history_path = f"./history/hiddendim_{hidden_dim}_layer_1.pkl"
@@ -106,7 +106,7 @@ def main():
             print(f"Start training with train_data_size={train_data_size}")
             cropped_trainset = torch.utils.data.Subset(trainset, list(range(train_data_size)))
             cropped_trainloader = torch.utils.data.DataLoader(cropped_trainset, batch_size=train_batch_size, shuffle=True)
-            model = DNN(784, 10, 100, 2).to(device)
+            model = DNN(784, 10, 100, 2, False).to(device)
             optimizer = torch.optim.Adam(model.parameters())
             history = train(model, cropped_trainloader, testloader, criterion, optimizer, n_epochs, device, 10)
             history_path = f"./history/train_data_size_{train_data_size}.pkl"
@@ -119,7 +119,7 @@ def main():
         for num_hidden_layers in num_hidden_layers_list:
             avoid_randomness(random_seed)
             print(f"Start training with num_hidden_layers={num_hidden_layers}")
-            model = DNN(784, 10, 100, num_hidden_layers).to(device)
+            model = DNN(784, 10, 100, num_hidden_layers, True).to(device)
             optimizer = torch.optim.Adam(model.parameters())
             history = train(model, trainloader, testloader, criterion, optimizer, n_epochs, device, 10)
             history_path = f"./history/num_hidden_layers_{num_hidden_layers}.pkl"
