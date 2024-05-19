@@ -14,7 +14,7 @@ if __name__ == "__main__":
     for num_hidden_layers in num_hidden_layers_list:
         print(f"Plotting boundary for model with {num_hidden_layers} hidden layers")
         model_path = f"./models/hw2_num_hidden_layers_{num_hidden_layers}.pth"
-        model = DNN(2, 4, 100, num_hidden_layers).to(device)
+        model = DNN(2, 4, 100, num_hidden_layers, True).to(device)
         model.load_state_dict(torch.load(model_path))
         model.eval()
         pred = torch.zeros(0, dtype=torch.int64).to(device)

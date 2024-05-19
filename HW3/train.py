@@ -43,12 +43,12 @@ def train(model, trainloader, testloader, criterion, optimizer, n_epochs, device
                 correct += (outputs.argmax(1) == labels).sum().item()
         result["test_accuracy"] = correct / total
         history.append(result)
-        print(f"Epoch {epoch+1}/{n_epochs}: train_accuracy={result['train_accuracy']}, test_accuracy={result['test_accuracy']}, best_accuracy={best_accuracy}")
         # Save the model if the test accuracy is the best
         if result["test_accuracy"] > best_accuracy:
             best_accuracy = result["test_accuracy"]
             if save_path is not None:
                 torch.save(model.state_dict(), save_path)
+        print(f"Epoch {epoch+1}/{n_epochs}: train_accuracy={result['train_accuracy']}, test_accuracy={result['test_accuracy']}, best_accuracy={best_accuracy}")
 
     return history
 
@@ -57,7 +57,7 @@ def main():
     parser.add_argument("-p", "--part", dest="part", required=True, help="part number")
     args = parser.parse_args()
 
-    train_batch_size = 64
+    train_batch_size = 32
 
     if args.part != "4":
         # Load MNIST dataset
@@ -81,8 +81,8 @@ def main():
 
     # Shared hyperparameters
     n_epochs = 20
-    random_seed = 42
-    criterion = torch.nn.MSELoss()
+    random_seed = 67
+    criterion = torch.nn.CrossEntropyLoss()
 
     if args.part == "1":
         # Part 1-1: Different number of neurons with 1 hidden layer
@@ -133,7 +133,7 @@ def main():
         for num_hidden_layers in num_hidden_layers_list:
             avoid_randomness(random_seed)
             print(f"Start training with num_hidden_layers={num_hidden_layers}")
-            model = DNN(2, 4, 100, num_hidden_layers).to(device)
+            model = DNN(2, 4, 100, num_hidden_layers, True).to(device) # batch_norm=True
             optimizer = torch.optim.Adam(model.parameters())
             history = train(model, trainloader, testloader, criterion, optimizer, n_epochs, device, 4, f"./models/hw2_num_hidden_layers_{num_hidden_layers}.pth")
             history_path = f"./history/hw2_num_hidden_layers_{num_hidden_layers}.pkl"

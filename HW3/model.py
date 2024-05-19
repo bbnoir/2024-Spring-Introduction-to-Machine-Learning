@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class DNN(nn.Module):
-    def __init__(self, input_dim, output_dim, hidden_dim, num_hidden_layers):
+    def __init__(self, input_dim, output_dim, hidden_dim, num_hidden_layers, batch_norm):
         super(DNN, self).__init__()
 
         self.input_dim = input_dim
@@ -13,6 +13,8 @@ class DNN(nn.Module):
         seq.append(nn.ReLU())
         for _ in range(num_hidden_layers):
             seq.append(nn.Linear(hidden_dim, hidden_dim))
+            if batch_norm:
+                seq.append(nn.BatchNorm1d(hidden_dim))
             seq.append(nn.ReLU())
         seq.append(nn.Linear(hidden_dim, output_dim))
         
